@@ -1,0 +1,66 @@
+@page "/lecturer/course/{CourseId:int}"
+@using StudentInfoSystem.Models
+@using StudentInfoSystem.Services
+@inject ICourseService CourseService
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Lecturer")]
+@rendermode InteractiveServer
+
+<h3>Course Details</h3>
+
+@if (students == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Student Number</th>
+                <th>Name</th>
+                <th>Current Grade</th>
+                <th>Assign Grade</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var enrollment in students)
+            {
+                <tr>
+                    <td>@enrollment.Student?.StudentNumber</td>
+                    <td>@enrollment.Student?.FullName</td>
+                    <td>@enrollment.Grade</td>
+                    <td>
+                        <select @onchange="(e) => UpdateGrade(enrollment.Id, e.Value.ToString())">
+                            <option value="" selected="@(string.IsNullOrEmpty(enrollment.Grade))">Select...</option>
+                            @foreach (var g in grades)
+                            {
+                                <option value="@g" selected="@(enrollment.Grade == g)">@g</option>
+                            }
+                        </select>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Parameter] public int CourseId { get; set; }
+    private List<Enrollment> students;
+    private string[] grades = { "AA", "BA", "BB", "CB", "CC", "DC", "DD", "FF" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        students = await CourseService.GetCourseStudentsAsync(CourseId);
+    }
+
+    private async Task UpdateGrade(int enrollmentId, string newGrade)
+    {
+        await CourseService.AssignGradeAsync(enrollmentId, newGrade);
+    }
+}

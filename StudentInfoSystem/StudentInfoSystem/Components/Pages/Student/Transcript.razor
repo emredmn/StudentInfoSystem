@@ -1,0 +1,62 @@
+@page "/student/transcript"
+@using StudentInfoSystem.Models
+@using StudentInfoSystem.Services
+@using Microsoft.AspNetCore.Identity
+@inject IStudentService StudentService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Student")]
+@rendermode InteractiveServer
+
+<h3>Transcript</h3>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h4>GPA: @gpa</h4>
+    </div>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Course</th>
+            <th>Credits</th>
+            <th>Grade</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var enrollment in transcript)
+        {
+            <tr>
+                <td>@enrollment.Course?.CourseCode - @enrollment.Course?.CourseName</td>
+                <td>@enrollment.Course?.Credits</td>
+                <td>
+                    @if (string.IsNullOrEmpty(enrollment.Grade))
+                    {
+                        <span class="text-muted">Not Graded</span>
+                    }
+                    else
+                    {
+                        <span class="fw-bold">@enrollment.Grade</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Enrollment> transcript = new();
+    private double gpa = 0.0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user != null)
+        {
+            transcript = await StudentService.GetMyGradesAsync(user.Id);
+            gpa = await StudentService.CalculateGpaAsync(user.Id);
+        }
+    }
+}

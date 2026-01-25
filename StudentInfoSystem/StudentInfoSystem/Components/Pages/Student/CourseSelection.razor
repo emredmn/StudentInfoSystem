@@ -1,0 +1,83 @@
+@page "/student/courses"
+@using StudentInfoSystem.Models
+@using StudentInfoSystem.Services
+@using Microsoft.AspNetCore.Identity
+@inject IStudentService StudentService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Student")]
+@rendermode InteractiveServer
+
+<h3>Course Selection</h3>
+
+<div class="alert alert-info">
+    Total Credits: @totalCredits / 30
+</div>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Credits</th>
+            <th>Lecturer</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in availableCourses)
+        {
+            <tr>
+                <td>@course.CourseCode</td>
+                <td>@course.CourseName</td>
+                <td>@course.Credits</td>
+                <td>@(course.Lecturer?.FullName ?? "-")</td>
+                <td>
+                    <button class="btn btn-success" @onclick="() => Enroll(course.Id)">Enroll</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Course> availableCourses = new();
+    private int totalCredits = 0;
+    private string errorMessage;
+    private ApplicationUser currentUser;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        currentUser = await UserManager.GetUserAsync(authState.User);
+        if (currentUser != null)
+        {
+            await LoadData();
+        }
+    }
+
+    private async Task LoadData()
+    {
+        totalCredits = await StudentService.GetTotalCreditsAsync(currentUser.Id);
+        availableCourses = await StudentService.GetAvailableCoursesAsync(currentUser.Id);
+    }
+
+    private async Task Enroll(int courseId)
+    {
+        errorMessage = null;
+        bool success = await StudentService.RegisterCourseAsync(currentUser.Id, courseId);
+        if (success)
+        {
+            await LoadData();
+        }
+        else
+        {
+            errorMessage = "Cannot enroll. Check credit limit (Max 30) or already enrolled.";
+        }
+    }
+}

@@ -1,0 +1,101 @@
+@page "/admin/users"
+@using Microsoft.AspNetCore.Identity
+@using StudentInfoSystem.Models
+@using StudentInfoSystem.Services
+@inject ICourseService CourseService
+@inject NavigationManager NavigationManager
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+<h3>User Management</h3>
+
+<div class="card mb-3">
+    <div class="card-header">Add New User</div>
+    <div class="card-body">
+        <EditForm Model="@newUser" OnValidSubmit="HandleAddUser">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label>Full Name</label>
+                <InputText class="form-control" @bind-Value="newUser.FullName" />
+            </div>
+            <div class="mb-3">
+                <label>Email / Username</label>
+                <InputText class="form-control" @bind-Value="newUser.Email" />
+            </div>
+            <div class="mb-3">
+                <label>Password</label>
+                <InputText class="form-control" @bind-Value="password" type="password" />
+            </div>
+            <div class="mb-3">
+                <label>Role</label>
+                <InputSelect class="form-control" @bind-Value="selectedRole">
+                    <option value="Student">Student</option>
+                    <option value="Lecturer">Lecturer</option>
+                    <option value="Admin">Admin</option>
+                </InputSelect>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Create User</button>
+        </EditForm>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in userWithRoles)
+        {
+            <tr>
+                <td>@item.User.FullName</td>
+                <td>@item.User.Email</td>
+                <td>@item.Role</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" @onclick="() => DeleteUser(item.User.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<(ApplicationUser User, string Role)> userWithRoles = new();
+    private ApplicationUser newUser = new();
+    private string password = "123";
+    private string selectedRole = "Student";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        userWithRoles = await CourseService.GetAllUsersWithRolesAsync();
+    }
+
+    private async Task HandleAddUser()
+    {
+        newUser.UserName = newUser.Email;
+        await CourseService.CreateUserAsync(newUser, password, selectedRole);
+        newUser = new();
+        password = "123"; 
+        await LoadUsers();
+    }
+
+    private async Task DeleteUser(string userId)
+    {
+        if (string.IsNullOrEmpty(userId)) return;
+        
+        await CourseService.DeleteUserAsync(userId);
+        await LoadUsers();
+    }
+}

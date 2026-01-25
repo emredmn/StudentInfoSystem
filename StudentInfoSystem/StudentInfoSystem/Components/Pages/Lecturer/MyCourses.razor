@@ -1,0 +1,51 @@
+@page "/lecturer/courses"
+@using StudentInfoSystem.Models
+@using StudentInfoSystem.Services
+@using Microsoft.AspNetCore.Identity
+@inject ICourseService CourseService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Lecturer")]
+@rendermode InteractiveServer
+
+<h3>My Courses</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Credits</th>
+            <th>Students</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in myCourses)
+        {
+            <tr>
+                <td>@course.CourseCode</td>
+                <td>@course.CourseName</td>
+                <td>@course.Credits</td>
+                <td>@course.Enrollments?.Count</td>
+                <td>
+                    <a href="/lecturer/course/@course.Id" class="btn btn-sm btn-info">Manage Grades</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Course> myCourses = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = await UserManager.GetUserAsync(authState.User);
+        if (user != null)
+        {
+            myCourses = await CourseService.GetLecturerCoursesAsync(user.Id);
+        }
+    }
+}

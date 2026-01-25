@@ -1,0 +1,100 @@
+@page "/admin/courses"
+@using StudentInfoSystem.Models
+@using StudentInfoSystem.Services
+@inject ICourseService CourseService
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+<h3>Course Management</h3>
+
+<div class="card mb-3">
+    <div class="card-header">Add New Course</div>
+    <div class="card-body">
+        <EditForm Model="@newCourse" OnValidSubmit="HandleAddCourse">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label>Course Code</label>
+                <InputText class="form-control" @bind-Value="newCourse.CourseCode" />
+            </div>
+            <div class="mb-3">
+                <label>Course Name</label>
+                <InputText class="form-control" @bind-Value="newCourse.CourseName" />
+            </div>
+            <div class="mb-3">
+                <label>Credits (1-8)</label>
+                <InputNumber class="form-control" @bind-Value="newCourse.Credits" />
+            </div>
+            <div class="mb-3">
+                <label>Lecturer</label>
+                <InputSelect class="form-control" @bind-Value="newCourse.LecturerId">
+                    <option value="">Select Lecturer...</option>
+                    @foreach (var lect in lecturers)
+                    {
+                            <option value="@lect.Id">@lect.FullName</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create Course</button>
+        </EditForm>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Name</th>
+            <th>Credits</th>
+            <th>Lecturer</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in courses)
+        {
+                <tr>
+                    <td>@course.CourseCode</td>
+                    <td>@course.CourseName</td>
+                    <td>@course.Credits</td>
+                    <td>@(course.Lecturer?.FullName ?? "-")</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteCourse(course.Id)">Delete</button>
+                    </td>
+                </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Course> courses = new();
+    private List<ApplicationUser> lecturers = new();
+    private Course newCourse = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        courses = await CourseService.GetAllCoursesAsync();
+        var users = await CourseService.GetAllUsersWithRolesAsync();
+        lecturers = users.Where(u => u.Role == "Lecturer").Select(u => u.User).ToList();
+    }
+
+    private async Task HandleAddCourse()
+    {
+        await CourseService.CreateCourseAsync(newCourse);
+        newCourse = new();
+        await LoadData();
+    }
+
+    private async Task DeleteCourse(int courseId)
+    {
+        await CourseService.DeleteCourseAsync(courseId);
+        await LoadData();
+    }
+}

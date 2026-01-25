@@ -1,0 +1,28 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Welcome to Student Info System</h1>
+
+<AuthorizeView>
+    <Authorized>
+        <p>You are logged in as <strong>@context.User.Identity?.Name</strong>.</p>
+        
+        @if (context.User.IsInRole("Admin"))
+        {
+            <div class="alert alert-primary">You are an Admin. Use the menu to manage users and courses.</div>
+        }
+        else if (context.User.IsInRole("Lecturer"))
+        {
+            <div class="alert alert-info">You are a Lecturer. Go to 'My Courses' to manage grades.</div>
+        }
+        else if (context.User.IsInRole("Student"))
+        {
+            <div class="alert alert-success">You are a Student. Check 'Course Selection' or 'Transcript'.</div>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <p>Please log in to continue.</p>
+        <a href="login" class="btn btn-primary">Go to Login</a>
+    </NotAuthorized>
+</AuthorizeView>
