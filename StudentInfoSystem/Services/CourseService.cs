@@ -54,6 +54,7 @@ namespace StudentInfoSystem.Services
         {
             return await _context.Courses
                 .Include(c => c.Lecturer)
+                .Include(c => c.Department)
                 .ToListAsync();
         }
 
@@ -86,6 +87,7 @@ namespace StudentInfoSystem.Services
             return await _context.Courses
                 .Where(c => c.LecturerId == lecturerId)
                 .Include(c => c.Enrollments)
+                .Include(c => c.Department)
                 .ToListAsync();
         }
 

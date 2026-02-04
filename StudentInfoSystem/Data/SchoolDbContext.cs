@@ -13,6 +13,7 @@ namespace StudentInfoSystem.Data
 
         public DbSet<Course> Courses { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
+        public DbSet<Department> Departments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -35,6 +36,12 @@ namespace StudentInfoSystem.Data
                 .WithMany(u => u.TaughtCourses)
                 .HasForeignKey(c => c.LecturerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Course>()
+                .HasOne(c => c.Department)
+                .WithMany(d => d.Courses)
+                .HasForeignKey(c => c.DepartmentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             SeedData(builder);
         }
@@ -94,9 +101,14 @@ namespace StudentInfoSystem.Data
                 new IdentityUserRole<string> { RoleId = "role_student", UserId = "user_student" }
             );
 
+            builder.Entity<Department>().HasData(
+                new Department { Id = 1, Name = "Computer Science", Code = "CS" },
+                new Department { Id = 2, Name = "Mathematics", Code = "MATH" }
+            );
+
             builder.Entity<Course>().HasData(
-                new Course { Id = 1, CourseCode = "MATH101", CourseName = "Calculus I", Credits = 4, LecturerId = "user_lecturer" },
-                new Course { Id = 2, CourseCode = "CS101", CourseName = "Intro to CS", Credits = 3, LecturerId = "user_lecturer" }
+                new Course { Id = 1, CourseCode = "MATH101", CourseName = "Calculus I", Credits = 4, LecturerId = "user_lecturer", DepartmentId = 2 },
+                new Course { Id = 2, CourseCode = "CS101", CourseName = "Intro to CS", Credits = 3, LecturerId = "user_lecturer", DepartmentId = 1 }
             );
         }
     }

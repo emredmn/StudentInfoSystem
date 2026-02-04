@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentInfoSystem.Data;
 
@@ -10,9 +11,11 @@ using StudentInfoSystem.Data;
 namespace StudentInfoSystem.Migrations
 {
     [DbContext(typeof(SchoolDbContext))]
-    partial class SchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260204193221_AddDepartment")]
+    partial class AddDepartment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.23");
@@ -257,16 +260,16 @@ namespace StudentInfoSystem.Migrations
                         {
                             Id = "user_admin",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "294217bf-007e-42fc-b56d-a547b393a64c",
+                            ConcurrencyStamp = "1cd70795-b951-4c2d-970d-bdfac9ba6d4c",
                             Email = "admin@school.com",
                             EmailConfirmed = true,
                             FullName = "Admin User",
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@SCHOOL.COM",
                             NormalizedUserName = "ADMIN@SCHOOL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEKPYJIx5uaWwK5O1lSxglY4RnX+1yxpY+K1Gmko987QkZhhaXeCxuP7GQsykH6rgYg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEOqJ3ltjUKy3kEmRkPg6qvS/hurVDeZD16PUalV+BVwJgQpuFRpRsW0U/E9ZkzWXNg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "483c0022-5fb5-4eac-a7ef-9206530477b2",
+                            SecurityStamp = "04ebdcc8-75c6-4eab-a7f5-f123ee4e3878",
                             TwoFactorEnabled = false,
                             UserName = "admin@school.com"
                         },
@@ -274,16 +277,16 @@ namespace StudentInfoSystem.Migrations
                         {
                             Id = "user_lecturer",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "9f46bb65-5568-4659-a58c-e06e13be0315",
+                            ConcurrencyStamp = "707e74e5-f769-4e2b-8f8c-15c500a20cb1",
                             Email = "lecturer@school.com",
                             EmailConfirmed = true,
                             FullName = "Dr. Teacher",
                             LockoutEnabled = false,
                             NormalizedEmail = "LECTURER@SCHOOL.COM",
                             NormalizedUserName = "LECTURER@SCHOOL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEFSd3M3+JX+dgqEm8hSvrzkRELq6u47cVaJn5A3srIWqGK4uMDc1Crzs/X9NQEvu8w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIh9zy7h+wisjqmlDa1OX70ha+M3mcDoxQeWNYSeWKqMiT5OX6P6tnqeErjnoJ5heA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "3ef3abcf-53bc-4eed-bfd2-c7665fee9fac",
+                            SecurityStamp = "166b179b-2f43-4f13-99ed-2eec8ca33d88",
                             TwoFactorEnabled = false,
                             UserName = "lecturer@school.com"
                         },
@@ -291,16 +294,16 @@ namespace StudentInfoSystem.Migrations
                         {
                             Id = "user_student",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "07f0e385-698f-41f0-b5da-1d95e54a33ee",
+                            ConcurrencyStamp = "2e75840a-549a-4108-9c6b-aa4c19a5aa6b",
                             Email = "student@school.com",
                             EmailConfirmed = true,
                             FullName = "John Student",
                             LockoutEnabled = false,
                             NormalizedEmail = "STUDENT@SCHOOL.COM",
                             NormalizedUserName = "STUDENT@SCHOOL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPNvJM5OlNeaEwI2IjDCWs4aKJg93SjeyLqhpo7IPYqV1/qSSpv4OQiASEBaDP4r/A==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDUDgxdDTV17Co42cFZW4anXfa0yXkp3HOsbxZfKQtaZeCwrFwufV+Dj8/ei/jUsMw==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "985a69c7-208e-4e55-b18c-eca7f6afcaee",
+                            SecurityStamp = "2e092c5e-d4c5-4e12-b467-8d2752fea252",
                             StudentNumber = "2024001",
                             TwoFactorEnabled = false,
                             UserName = "student@school.com"
@@ -325,11 +328,16 @@ namespace StudentInfoSystem.Migrations
                     b.Property<int>("Credits")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("LecturerId")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
 
                     b.HasIndex("LecturerId");
 
@@ -342,6 +350,7 @@ namespace StudentInfoSystem.Migrations
                             CourseCode = "MATH101",
                             CourseName = "Calculus I",
                             Credits = 4,
+                            DepartmentId = 2,
                             LecturerId = "user_lecturer"
                         },
                         new
@@ -350,7 +359,43 @@ namespace StudentInfoSystem.Migrations
                             CourseCode = "CS101",
                             CourseName = "Intro to CS",
                             Credits = 3,
+                            DepartmentId = 1,
                             LecturerId = "user_lecturer"
+                        });
+                });
+
+            modelBuilder.Entity("StudentInfoSystem.Models.Department", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Departments");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "CS",
+                            Name = "Computer Science"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "MATH",
+                            Name = "Mathematics"
                         });
                 });
 
@@ -435,11 +480,19 @@ namespace StudentInfoSystem.Migrations
 
             modelBuilder.Entity("StudentInfoSystem.Models.Course", b =>
                 {
+                    b.HasOne("StudentInfoSystem.Models.Department", "Department")
+                        .WithMany("Courses")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("StudentInfoSystem.Models.ApplicationUser", "Lecturer")
                         .WithMany("TaughtCourses")
                         .HasForeignKey("LecturerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Department");
 
                     b.Navigation("Lecturer");
                 });
@@ -473,6 +526,11 @@ namespace StudentInfoSystem.Migrations
             modelBuilder.Entity("StudentInfoSystem.Models.Course", b =>
                 {
                     b.Navigation("Enrollments");
+                });
+
+            modelBuilder.Entity("StudentInfoSystem.Models.Department", b =>
+                {
+                    b.Navigation("Courses");
                 });
 #pragma warning restore 612, 618
         }

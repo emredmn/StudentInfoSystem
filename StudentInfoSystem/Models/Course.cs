@@ -21,5 +21,8 @@ namespace StudentInfoSystem.Models
         public ApplicationUser Lecturer { get; set; }
         
         public ICollection<Enrollment> Enrollments { get; set; }
+
+        public int DepartmentId { get; set; }
+        public Department Department { get; set; }
     }
 }

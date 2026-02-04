@@ -2,6 +2,7 @@
 @using StudentInfoSystem.Models
 @using StudentInfoSystem.Services
 @inject ICourseService CourseService
+@inject IDepartmentService DepartmentService
 @attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
@@ -10,7 +11,7 @@
 <div class="card mb-3">
     <div class="card-header">Add New Course</div>
     <div class="card-body">
-        <EditForm Model="@newCourse" OnValidSubmit="HandleAddCourse">
+        <EditForm Model="@newCourse" OnValidSubmit="HandleAddCourse" FormName="AddCourseForm">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
@@ -36,6 +37,16 @@
                     }
                 </InputSelect>
             </div>
+            <div class="mb-3">
+                <label>Department</label>
+                <InputSelect class="form-control" @bind-Value="newCourse.DepartmentId">
+                    <option value="0">Select Department...</option>
+                    @foreach (var dept in departments)
+                    {
+                        <option value="@dept.Id">@dept.Name (@dept.Code)</option>
+                    }
+                </InputSelect>
+            </div>
 
             <button type="submit" class="btn btn-primary">Create Course</button>
         </EditForm>
@@ -49,6 +60,7 @@
             <th>Name</th>
             <th>Credits</th>
             <th>Lecturer</th>
+            <th>Department</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -60,6 +72,7 @@
                     <td>@course.CourseName</td>
                     <td>@course.Credits</td>
                     <td>@(course.Lecturer?.FullName ?? "-")</td>
+                    <td>@(course.Department?.Name ?? "-")</td>
                     <td>
                         <button class="btn btn-danger btn-sm" @onclick="() => DeleteCourse(course.Id)">Delete</button>
                     </td>
@@ -71,6 +84,7 @@
 @code {
     private List<Course> courses = new();
     private List<ApplicationUser> lecturers = new();
+    private List<Department> departments = new();
     private Course newCourse = new();
 
     protected override async Task OnInitializedAsync()
@@ -81,6 +95,7 @@
     private async Task LoadData()
     {
         courses = await CourseService.GetAllCoursesAsync();
+        departments = await DepartmentService.GetAllDepartmentsAsync();
         var users = await CourseService.GetAllUsersWithRolesAsync();
         lecturers = users.Where(u => u.Role == "Lecturer").Select(u => u.User).ToList();
     }

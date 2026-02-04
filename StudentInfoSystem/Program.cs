@@ -30,6 +30,7 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<StudentInfoSystem.Services.IStudentService, StudentInfoSystem.Services.StudentService>();
 builder.Services.AddScoped<StudentInfoSystem.Services.ICourseService, StudentInfoSystem.Services.CourseService>();
+builder.Services.AddScoped<StudentInfoSystem.Services.IDepartmentService, StudentInfoSystem.Services.DepartmentService>();
 
 var app = builder.Build();
 

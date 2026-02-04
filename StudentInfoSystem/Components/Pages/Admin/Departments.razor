@@ -1,0 +1,83 @@
+@page "/admin/departments"
+@using StudentInfoSystem.Models
+@using StudentInfoSystem.Services
+@inject IDepartmentService DepartmentService
+@inject NavigationManager NavigationManager
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+<h3>Departments</h3>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <EditForm Model="@newDepartment" OnValidSubmit="HandleValidSubmit" FormName="AddDepartmentForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="input-group">
+                <InputText class="form-control" @bind-Value="newDepartment.Code" placeholder="Code (e.g. CS)" />
+                <InputText class="form-control" @bind-Value="newDepartment.Name" placeholder="Name (e.g. Computer Science)" />
+                <button type="submit" class="btn btn-primary">Add Result</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@if (departments == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dept in departments)
+            {
+                <tr>
+                    <td>@dept.Code</td>
+                    <td>@dept.Name</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => DeleteDepartment(dept.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Department>? departments;
+
+    [SupplyParameterFromForm]
+    public Department newDepartment { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDepartments();
+    }
+
+    private async Task LoadDepartments()
+    {
+        departments = await DepartmentService.GetAllDepartmentsAsync();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await DepartmentService.AddDepartmentAsync(newDepartment);
+        newDepartment = new Department();
+        await LoadDepartments();
+    }
+
+    private async Task DeleteDepartment(int id)
+    {
+        await DepartmentService.DeleteDepartmentAsync(id);
+        await LoadDepartments();
+    }
+}
